@@ -1,4 +1,5 @@
-# 💸 SplitSync (Supabase version)
+# 💸 Hisaab
+
 
 Group expense splitter built with plain **HTML, CSS and JavaScript** and **Supabase**.
 No Express, no EJS, no server code. The browser talks to Supabase directly.
