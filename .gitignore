@@ -1,0 +1,12 @@
+# Dependencies and system files
+node_modules/
+.DS_Store
+
+# Never commit secrets (Supabase secret key, passwords)
+.env
+.env.*
+
+# Logs and editor folders
+*.log
+.vscode/
+.vercel/

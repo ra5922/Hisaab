@@ -1,0 +1,9 @@
+{
+  "name": "splitsync-web",
+  "version": "2.0.0",
+  "private": true,
+  "description": "SplitSync - group expense splitter. Plain HTML, CSS and JavaScript with Supabase.",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -c-1 -o"
+  }
+}

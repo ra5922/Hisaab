@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitSync</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark')}catch(e){}</script>
+</head>
+<body>
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+    const { data: { session } } = await supabase.auth.getSession();
+    location.replace(session ? 'groups.html' : 'login.html');
+  </script>
+</body>
+</html>
