@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Hisaab">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#g)"/>
+  <rect x="16" y="14" width="8" height="36" rx="4" fill="#fff"/>
+  <rect x="40" y="14" width="8" height="36" rx="4" fill="#fff"/>
+  <rect x="21" y="25" width="13" height="8" rx="4" fill="#fff"/>
+  <rect x="30" y="32" width="13" height="8" rx="4" fill="#fff" fill-opacity="0.78"/>
+</svg>

@@ -56,7 +56,7 @@ export function buildPdf(doc, { group, expenses, members, balances }) {
 
   // ===== HEADER =====
   rect(0, 0, 595, 80, '#6366f1');
-  text('SplitSync - Expense Report', 50, 22, { size: 22, bold: true, color: '#ffffff' });
+  text('Hisaab - Expense Report', 50, 22, { size: 22, bold: true, color: '#ffffff' });
   text(
     `Group: ${group.name}  |  Category: ${group.category}  |  Exported: ${new Date().toLocaleDateString('en-IN')}`,
     50, 52, { size: 11, color: '#ffffff' }

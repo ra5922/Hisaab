@@ -3,6 +3,7 @@ import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, 
 
 function renderExpense(expense, splits, currentUserId) {
   const effectiveAmount = parseFloat(expense.amount) - (parseFloat(expense.discount) || 0);
+  const canEdit = expense.paid_by === currentUserId || expense.created_by === currentUserId;
 
   return `
 <div class="page-header">
@@ -12,6 +13,7 @@ function renderExpense(expense, splits, currentUserId) {
     <span class="category-badge category-${h(expense.category)}">${h(expense.category)}</span>
   </div>
   <div class="header-actions">
+    ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="btn-primary">✏️ Edit</a>` : ''}
     <a href="group.html?id=${h(expense.group_id)}" class="btn-ghost">← Back to Group</a>
   </div>
 </div>
@@ -125,7 +127,7 @@ async function main() {
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  document.title = `${expense.description} | SplitSync`;
+  document.title = `${expense.description} | Hisaab`;
   document.getElementById('content').innerHTML = renderExpense(expense, splits, ctx.user.id);
 
   const del = document.getElementById('delete-expense');

@@ -1,8 +1,11 @@
 import { supabase } from '../supabase.js';
-import { showFlash, setFlash, flashFromStorage, redirectIfSignedIn } from '../ui.js';
+import { showFlash, setFlash, flashFromStorage, redirectIfSignedIn, nextPage, param } from '../ui.js';
 
 if (!(await redirectIfSignedIn())) {
   flashFromStorage();
+
+  const loginLink = document.querySelector('a[href="login.html"]');
+  if (loginLink && param('next')) loginLink.href = 'login.html?next=' + encodeURIComponent(nextPage());
 
   document.getElementById('signup-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -30,11 +33,11 @@ if (!(await redirectIfSignedIn())) {
 
     if (data.session) {
       setFlash('success', `Welcome, ${name}! 🎉`);
-      location.href = 'groups.html';
+      location.href = nextPage();
     } else {
       // "Confirm email" is switched on in Supabase: they must click the link in their inbox first
       setFlash('success', 'Account created! Check your email to confirm it, then log in.');
-      location.href = 'login.html';
+      location.href = param('next') ? 'login.html?next=' + encodeURIComponent(nextPage()) : 'login.html';
     }
   });
 }

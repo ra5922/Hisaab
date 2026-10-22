@@ -12,6 +12,12 @@ export const initial = (name) => h(String(name || '?')[0].toUpperCase());
 
 export const param = (name) => new URLSearchParams(location.search).get(name);
 
+// "next" = the page to open after logging in (e.g. an invite link). Only same-site pages are accepted.
+export function nextPage() {
+  const next = param('next');
+  return next && /^[a-z0-9-]+\.html(\?[^#]*)?$/i.test(next) ? next : 'groups.html';
+}
+
 // ---------- Theme (dark / light) ----------
 
 function currentTheme() {
@@ -39,7 +45,7 @@ export function initTheme() {
 
 // ---------- Flash messages (shown once, can survive a page change) ----------
 
-const FLASH_KEY = 'splitsync_flash';
+const FLASH_KEY = 'hisaab_flash';
 
 export function showFlash(type, message) {
   const box = document.getElementById('flash');
@@ -77,8 +83,8 @@ export function renderNav(profile) {
   if (!nav) return;
   nav.innerHTML = `<nav class="navbar">
     <a href="groups.html" class="nav-brand">
-      <span class="brand-icon">💸</span>
-      <span>SplitSync</span>
+      <img class="brand-mark" src="img/logo.svg" alt="" width="30" height="30">
+      <span>Hisaab</span>
     </a>
     <div class="nav-actions">
       <button class="theme-toggle" type="button" title="Toggle dark mode">🌙</button>
@@ -103,7 +109,8 @@ export async function requireUser() {
   initTheme();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    location.replace('login.html');
+    const here = (location.pathname.split('/').pop() || 'groups.html') + location.search;
+    location.replace('login.html?next=' + encodeURIComponent(here));
     return null;
   }
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
@@ -122,7 +129,7 @@ export async function redirectIfSignedIn() {
   initTheme();
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
-    location.replace('groups.html');
+    location.replace(nextPage());
     return true;
   }
   return false;
