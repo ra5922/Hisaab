@@ -130,6 +130,7 @@ export function renderNav() {
 // Sends visitors to the login page if they are not signed in.
 export async function requireUser() {
   initTheme();
+  renderNav();   // draw the bar straight away so it never blinks between pages
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     const here = (location.pathname.split('/').pop() || 'groups.html') + location.search;
@@ -143,7 +144,6 @@ export async function requireUser() {
     email: session.user.email,
     avatar_color: '#6366f1',
   };
-  renderNav();
   return { user: session.user, profile: me };
 }
 

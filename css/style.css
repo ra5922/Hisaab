@@ -633,3 +633,10 @@ body {
   .bottom-nav { width: calc(100% - 16px); }
   .group-cover { width: 48px; height: 48px; }
 }
+/* ===== Smooth page changes (no black flash between pages) ===== */
+@view-transition { navigation: auto; }
+html { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+.bottom-nav { view-transition-name: bottom-nav; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.16s; }
+::view-transition-group(bottom-nav) { animation-duration: 0s; }
