@@ -37,6 +37,8 @@ export function toggleTheme() {
   const next = currentTheme() === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
+  const bar = document.querySelector('meta[name=theme-color]');
+  if (bar) bar.content = next === 'light' ? '#f4f4f8' : '#0f0f17';
   updateThemeButton();
 }
 

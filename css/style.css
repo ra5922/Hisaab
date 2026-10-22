@@ -597,3 +597,27 @@ a.activity-item:hover { color: var(--text); border-color: var(--border-hover); }
 .groups-list .group-total { padding-right: 0; }
 .groups-list .group-total strong { font-size: 0.98rem; }
 .groups-list .group-total small { text-transform: none; letter-spacing: 0; font-size: 0.78rem; }
+
+/* ===== App-like full screen on phones (no grey bars) ===== */
+html {
+  background: var(--bg);                 /* same colour as the app, so nothing grey shows at the edges */
+  min-height: 100%;
+  overscroll-behavior: none;
+}
+body {
+  min-height: 100vh; min-height: 100dvh;
+  overscroll-behavior-y: none;
+  padding-top: env(safe-area-inset-top);  /* keeps content below the notch / status bar */
+}
+body::before { height: 100lvh; }          /* glow fills the full screen even when the browser bars hide */
+.auth-page { min-height: calc(100dvh - env(safe-area-inset-top)); }
+.main-content { padding-left: max(1.25rem, env(safe-area-inset-left)); padding-right: max(1.25rem, env(safe-area-inset-right)); }
+@media (max-width: 600px) {
+  .main-content { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+}
+@media (max-width: 360px) {
+  .page-title { font-size: 1.25rem; }
+  .btn-primary, .btn-ghost { padding: 0.55rem 1rem; font-size: 0.85rem; }
+  .bottom-nav { width: calc(100% - 16px); }
+  .group-cover { width: 48px; height: 48px; }
+}
