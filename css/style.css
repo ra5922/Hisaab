@@ -32,6 +32,7 @@
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 4px 18px rgba(0, 0, 0, 0.3);
   --blur: blur(22px) saturate(160%);
+  --sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.03) 38%, rgba(255, 255, 255, 0) 60%);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.14);
   --font: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -62,6 +63,7 @@
   --shadow: 0 10px 40px rgba(60, 60, 120, 0.14);
   --shadow-sm: 0 4px 16px rgba(60, 60, 120, 0.1);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.2) 40%, rgba(255, 255, 255, 0) 65%);
 }
 
 /* ===== RESET & BASE ===== */
@@ -69,7 +71,7 @@
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   font-family: var(--font);
-  background: var(--bg);
+  background: transparent;           /* the colour + glow live on html and body::before so nothing covers them */
   color: var(--text);
   min-height: 100vh;
   min-height: 100dvh;
@@ -78,19 +80,24 @@ body {
   -webkit-tap-highlight-color: transparent;
   transition: background var(--transition), color var(--transition);
 }
-/* soft ambient colour behind every glass surface (this is what the "mirror" reflects) */
+/* THE background (same purple/blue glow as the login screen) – fixed, edge to edge, on every page.
+   It sits behind all the glass surfaces, which is what they "reflect". */
 body::before {
-  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  content: ''; position: fixed; z-index: -1; pointer-events: none;
+  left: 0; right: 0; top: 0;
+  height: 100vh; height: 100lvh;
   background:
-    radial-gradient(520px 420px at 12% 8%, rgba(139, 92, 246, 0.3), transparent 70%),
-    radial-gradient(560px 460px at 92% 30%, rgba(88, 120, 255, 0.18), transparent 70%),
-    radial-gradient(520px 520px at 30% 100%, rgba(139, 92, 246, 0.18), transparent 70%);
+    radial-gradient(440px 440px at 50px 80px, rgba(139, 92, 246, 0.42), transparent 70%),
+    radial-gradient(480px 480px at calc(100% - 40px) calc(100% - 50px), rgba(88, 120, 255, 0.32), transparent 70%),
+    radial-gradient(520px 460px at 100% 32%, rgba(88, 120, 255, 0.14), transparent 70%),
+    radial-gradient(520px 520px at 10% 64%, rgba(139, 92, 246, 0.16), transparent 70%);
 }
 [data-theme="light"] body::before {
   background:
-    radial-gradient(520px 420px at 12% 8%, rgba(139, 92, 246, 0.3), transparent 70%),
-    radial-gradient(560px 460px at 92% 30%, rgba(120, 150, 255, 0.2), transparent 70%),
-    radial-gradient(520px 520px at 30% 100%, rgba(139, 92, 246, 0.2), transparent 70%);
+    radial-gradient(440px 440px at 50px 80px, rgba(139, 92, 246, 0.34), transparent 70%),
+    radial-gradient(480px 480px at calc(100% - 40px) calc(100% - 50px), rgba(99, 130, 255, 0.28), transparent 70%),
+    radial-gradient(520px 460px at 100% 32%, rgba(120, 150, 255, 0.16), transparent 70%),
+    radial-gradient(520px 520px at 10% 64%, rgba(139, 92, 246, 0.14), transparent 70%);
 }
 img { max-width: 100%; }
 a { color: var(--accent); text-decoration: none; transition: color var(--transition); }
@@ -101,8 +108,9 @@ button { -webkit-appearance: none; appearance: none; }
 /* ===== GLASS HELPER (applied to every card-like surface) ===== */
 .glass, .form-card, .expense-item, .group-card, .detail-card, .chart-card, .balance-card,
 .transaction-item, .history-item, .member-row, .friend-row, .activity-item, .profile-card,
-.empty-state, .insight-card, .tabs, .settings-row, .modal-card {
-  background: var(--bg-card);
+.empty-state, .insight-card, .tabs, .settings-row, .modal-card, .groups-list {
+  background-color: var(--bg-card);
+  background-image: var(--sheen);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border: 1px solid var(--border);
@@ -120,7 +128,7 @@ button { -webkit-appearance: none; appearance: none; }
   display: grid; grid-template-columns: repeat(4, 1fr);
   padding: 6px;
   border-radius: 999px;
-  background: var(--bg-card);
+  background-color: var(--bg-card); background-image: var(--sheen);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid var(--border);
@@ -176,7 +184,7 @@ button { -webkit-appearance: none; appearance: none; }
   width: 42px; height: 42px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   color: var(--text); cursor: pointer;
-  background: var(--bg-card);
+  background-color: var(--bg-card); background-image: var(--sheen);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
   border: 1px solid var(--border);
   box-shadow: var(--glass-edge), var(--shadow-sm);
@@ -200,7 +208,7 @@ button { -webkit-appearance: none; appearance: none; }
 .btn-primary:disabled, .btn-ghost:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 /* secondary capsules: same white text on a deeper glass tint */
 .btn-ghost, .capsule.dark {
-  background: linear-gradient(135deg, rgba(70, 66, 110, 0.92), rgba(42, 40, 72, 0.92));
+  background: linear-gradient(135deg, rgba(110, 100, 175, 0.55), rgba(60, 56, 110, 0.55));
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .btn-danger {
@@ -212,7 +220,8 @@ button { -webkit-appearance: none; appearance: none; }
   display: inline-flex; align-items: center; justify-content: center;
   padding: 0.28rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
   color: #fff; cursor: pointer; white-space: nowrap; border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(135deg, rgba(70, 66, 110, 0.92), rgba(42, 40, 72, 0.92));
+  background: linear-gradient(135deg, rgba(110, 100, 175, 0.55), rgba(60, 56, 110, 0.55));
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   transition: all var(--transition);
 }
 .btn-tiny:hover { color: #fff; background: var(--accent-gradient); }
@@ -232,13 +241,8 @@ button { -webkit-appearance: none; appearance: none; }
 .auth-page {
   min-height: 100vh; min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;
-  padding: 2rem 1.5rem; position: relative; overflow: hidden;
+  padding: 2rem 1.5rem; position: relative;
 }
-.auth-page::before, .auth-page::after {
-  content: ''; position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; pointer-events: none;
-}
-.auth-page::before { width: 340px; height: 340px; background: rgba(139, 92, 246, 0.35); top: -80px; left: -90px; }
-.auth-page::after { width: 380px; height: 380px; background: rgba(88, 120, 255, 0.25); bottom: -120px; right: -100px; }
 .auth-card {
   position: relative; z-index: 1;
   width: 100%; max-width: 380px;
@@ -370,7 +374,7 @@ form .btn-primary[type="submit"] { margin-top: 1.1rem; }
 .tab {
   flex-shrink: 0; border: none; padding: 0.5rem 1rem; border-radius: 999px;
   font-size: 0.82rem; font-weight: 600; color: #fff; cursor: pointer; white-space: nowrap;
-  background: linear-gradient(135deg, rgba(70, 66, 110, 0.85), rgba(42, 40, 72, 0.85));
+  background: linear-gradient(135deg, rgba(110, 100, 175, 0.5), rgba(60, 56, 110, 0.5));
   transition: all var(--transition);
 }
 .tab:hover { filter: brightness(1.2); }
@@ -535,7 +539,10 @@ a.activity-item:hover { color: var(--text); border-color: var(--border-hover); }
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
 .modal.open { display: flex; animation: fadeIn 0.2s ease; }
-.modal-card { width: 100%; max-width: 440px; border-radius: 28px; padding: 1.5rem; background: var(--bg-solid); animation: rise 0.3s ease; }
+.modal-card { width: 100%; max-width: 440px; border-radius: 28px; padding: 1.5rem; animation: rise 0.3s ease;
+  -webkit-backdrop-filter: blur(30px) saturate(170%); backdrop-filter: blur(30px) saturate(170%); }
+[data-theme="dark"] .modal-card { background-color: rgba(30, 28, 48, 0.62); }
+[data-theme="light"] .modal-card { background-color: rgba(255, 255, 255, 0.72); }
 .modal-card h3 { font-size: 1.15rem; margin-bottom: 0.3rem; }
 .modal-card .modal-actions { display: flex; gap: 0.5rem; margin-top: 1.1rem; flex-wrap: wrap; }
 @media (min-width: 640px) { .modal { align-items: center; } }
@@ -582,7 +589,7 @@ a.activity-item:hover { color: var(--text); border-color: var(--border-hover); }
 .main-content:has(.auth-page) { max-width: none; padding: 0; }
 
 /* ===== Groups page: simple flat rows (image · name · amount + members) ===== */
-.groups-list { gap: 0; }
+.groups-list { gap: 0; padding: 0.35rem 0.85rem; border-radius: var(--radius-lg); }
 .groups-list .group-card {
   background: transparent; border: none; border-radius: 0; box-shadow: none;
   -webkit-backdrop-filter: none; backdrop-filter: none;
@@ -598,18 +605,23 @@ a.activity-item:hover { color: var(--text); border-color: var(--border-hover); }
 .groups-list .group-total strong { font-size: 0.98rem; }
 .groups-list .group-total small { text-transform: none; letter-spacing: 0; font-size: 0.78rem; }
 
-/* ===== App-like full screen on phones (no grey bars) ===== */
+/* tinted boxes and inputs get the same frosted-glass blur */
+.danger-zone, .all-settled, .balance-card, .preview-text, .split-row, input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], select, textarea {
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+
+/* ===== App-like full screen on phones (no grey / black bars) ===== */
 html {
   background: var(--bg);                 /* same colour as the app, so nothing grey shows at the edges */
   min-height: 100%;
   overscroll-behavior: none;
 }
 body {
-  min-height: 100vh; min-height: 100dvh;
+  min-height: 100vh; min-height: 100lvh;
   overscroll-behavior-y: none;
   padding-top: env(safe-area-inset-top);  /* keeps content below the notch / status bar */
 }
-body::before { height: 100lvh; }          /* glow fills the full screen even when the browser bars hide */
 .auth-page { min-height: calc(100dvh - env(safe-area-inset-top)); }
 .main-content { padding-left: max(1.25rem, env(safe-area-inset-left)); padding-right: max(1.25rem, env(safe-area-inset-right)); }
 @media (max-width: 600px) {
