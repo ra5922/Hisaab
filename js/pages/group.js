@@ -15,6 +15,7 @@ function renderGroup({ group, members, expenses, balances, settlements, insights
     <span class="category-badge category-${h(group.category)}">${h(group.category)}</span>
   </div>
   <div class="header-actions">
+    <a href="groups.html" class="btn-ghost">← Back to Groups</a>
     <button type="button" id="btn-csv" class="btn-ghost">⬇ CSV</button>
     <button type="button" id="btn-pdf" class="btn-ghost">⬇ PDF</button>
     <a href="add-expense.html?group_id=${h(group.id)}" class="btn-primary">+ Add Expense</a>
