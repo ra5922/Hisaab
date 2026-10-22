@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, leave } from '../ui.js';
+import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
 import { round2, splitEqually, splitCustom } from '../logic.js';
 
 function renderForm(group, members, currentUserId, expense) {
@@ -21,11 +21,11 @@ function renderForm(group, members, currentUserId, expense) {
   };
   return `
 <div class="page-header">
-  <div>
-    <div class="breadcrumb"><a href="groups.html">Groups</a> / <a href="group.html?id=${h(group.id)}">${h(group.name)}</a> / ${editing ? 'Edit Expense' : 'Add Expense'}</div>
+  ${backButton(editing ? 'expense.html?id=' + expense.id : 'group.html?id=' + group.id)}
+  <div class="page-head-text">
     <h1 class="page-title">${editing ? 'Edit Expense' : 'Add Expense'}</h1>
+    <p class="page-subtitle">${h(group.name)}</p>
   </div>
-  <a href="${editing ? 'expense.html?id=' + h(expense.id) : 'group.html?id=' + h(group.id)}" class="btn-ghost">← Back</a>
 </div>
 
 <div class="form-card">

@@ -20,13 +20,17 @@ export function nextPage() {
 
 // ---------- Theme (dark / light) ----------
 
-function currentTheme() {
+export function currentTheme() {
   return document.documentElement.getAttribute('data-theme') || 'dark';
 }
 
+// Keeps the dark-mode switch on the Profile page in sync (does nothing on other pages)
 function updateThemeButton() {
-  const btn = document.querySelector('.theme-toggle');
-  if (btn) btn.textContent = currentTheme() === 'dark' ? '🌙' : '☀️';
+  const sw = document.querySelector('.switch[data-theme-switch]');
+  if (sw) {
+    sw.classList.toggle('on', currentTheme() === 'dark');
+    sw.setAttribute('aria-checked', currentTheme() === 'dark' ? 'true' : 'false');
+  }
 }
 
 export function toggleTheme() {
@@ -76,31 +80,48 @@ export function flashFromStorage() {
   } catch (e) { /* ignore */ }
 }
 
+// ---------- Shared bits: back button, group cover ----------
+
+const ICONS = {
+  groups: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M17.5 13.8c2.1.3 3.5 1.9 3.5 4.2"/></svg>',
+  activity: '<svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>',
+  friends: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/></svg>',
+  profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18c1.2-2.2 3.2-3.2 5.5-3.2s4.3 1 5.5 3.2"/></svg>',
+};
+
+// Round glass "<" button for the top-left corner. Pass the page it should go to.
+export const backButton = (href) =>
+  `<a href="${h(href)}" class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>`;
+
+export const EMOJIS = { food: '🍔', travel: '✈️', entertainment: '🎬', shopping: '🛍️', utilities: '⚡', general: '📦', sports: '⚽', medical: '💊' };
+
+// Group "image": a coloured cover tile with the category icon
+export const groupCover = (category) =>
+  `<div class="group-cover cover-${h(category || 'general')}"><span>${EMOJIS[category] || '📦'}</span></div>`;
+
 // ---------- Navbar + sign-in check ----------
 
-export function renderNav(profile) {
+// Which tab is lit up for the current page
+function activeTab() {
+  const page = location.pathname.split('/').pop() || 'groups.html';
+  if (page === 'activity.html') return 'activity';
+  if (page === 'friends.html') return 'friends';
+  if (page === 'profile.html') return 'profile';
+  return 'groups';   // groups, group, new-group, add-expense, expense, join
+}
+
+export function renderNav() {
   const nav = document.getElementById('nav');
   if (!nav) return;
-  nav.innerHTML = `<nav class="navbar">
-    <a href="groups.html" class="nav-brand">
-      <img class="brand-mark" src="img/logo.svg" alt="" width="30" height="30">
-      <span>Hisaab</span>
-    </a>
-    <div class="nav-actions">
-      <button class="theme-toggle" type="button" title="Toggle dark mode">🌙</button>
-      <div class="nav-user">
-        <span class="avatar-dot" style="background:${h(profile.avatar_color)}">${initial(profile.name)}</span>
-        <span class="nav-username">${h(profile.name)}</span>
-      </div>
-      <button class="btn-ghost" id="logout-btn" type="button">Logout</button>
-    </div>
+  const active = activeTab();
+  const item = (key, href, label) =>
+    `<a href="${href}" class="nav-item${active === key ? ' active' : ''}"${active === key ? ' aria-current="page"' : ''}>${ICONS[key]}<span>${label}</span></a>`;
+  nav.innerHTML = `<nav class="bottom-nav" aria-label="Main">
+    ${item('groups', 'groups.html', 'Groups')}
+    ${item('activity', 'activity.html', 'Activity')}
+    ${item('friends', 'friends.html', 'Friends')}
+    ${item('profile', 'profile.html', 'Profile')}
   </nav>`;
-  nav.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
-  nav.querySelector('#logout-btn').addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    location.href = 'login.html';
-  });
-  updateThemeButton();
 }
 
 // Use on every page that needs a signed-in user.
@@ -120,7 +141,7 @@ export async function requireUser() {
     email: session.user.email,
     avatar_color: '#6366f1',
   };
-  renderNav(me);
+  renderNav();
   return { user: session.user, profile: me };
 }
 

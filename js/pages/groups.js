@@ -1,16 +1,14 @@
 import { supabase } from '../supabase.js';
-import { h, requireUser, flashFromStorage } from '../ui.js';
-
-const EMOJI_MAP = { food: '🍔', travel: '✈️', entertainment: '🎬', shopping: '🛍️', utilities: '⚡', general: '📦', sports: '⚽', medical: '💊' };
+import { h, requireUser, flashFromStorage, groupCover } from '../ui.js';
 
 function renderGroups(groups) {
   return `
 <div class="page-header">
-  <div>
-    <h1 class="page-title">My Groups</h1>
-    <p class="page-subtitle">Manage your shared expenses</p>
+  <div class="page-head-text">
+    <h1 class="page-title">Groups</h1>
+    <p class="page-subtitle">Your shared expenses</p>
   </div>
-  <a href="new-group.html" class="btn-primary">+ New Group</a>
+  <a href="new-group.html" class="btn-primary">+ New</a>
 </div>
 
 ${groups.length === 0 ? `
@@ -21,31 +19,21 @@ ${groups.length === 0 ? `
   <a href="new-group.html" class="btn-primary">Create Your First Group</a>
 </div>
 ` : `
-<div class="groups-grid">
-  ${groups.map((group) => `
-  <a href="group.html?id=${h(group.id)}" class="group-card">
-    <div class="group-card-header">
-     <span class="category-badge category-${h(group.category)}">${h(EMOJI_MAP[group.category] || '📦')} ${h(group.category)}</span>
-      <span class="group-date">${h(new Date(group.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }))}</span>
+<div class="groups-list">
+  ${groups.map((group, i) => `
+  <a href="group.html?id=${h(group.id)}" class="group-card" style="animation-delay:${Math.min(i, 10) * 40}ms">
+    ${groupCover(group.category)}
+    <div class="group-info">
+      <div class="group-name">${h(group.name)}</div>
     </div>
-    <h3 class="group-name">${h(group.name)}</h3>
-    <div class="group-stats">
-      <div class="stat">
-        <span class="stat-value">${h(group.member_count)}</span>
-        <span class="stat-label">members</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">${h(group.expense_count)}</span>
-        <span class="stat-label">expenses</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">₹${h(parseFloat(group.total_spent).toFixed(0))}</span>
-        <span class="stat-label">total</span>
-      </div>
+    <div class="group-total">
+      <strong>₹${h(parseFloat(group.total_spent).toLocaleString('en-IN', { maximumFractionDigits: 0 }))}</strong>
+      <small>${h(group.member_count)} ${Number(group.member_count) === 1 ? 'member' : 'members'}</small>
     </div>
   </a>
   `).join('')}
 </div>
+<div class="new-group-wrap"><a href="new-group.html" class="btn-primary">+ Start a new group</a></div>
 `}`;
 }
 

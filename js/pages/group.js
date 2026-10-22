@@ -1,25 +1,28 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, initTabs, leave } from '../ui.js';
-import { calculateBalances, computeStats, computeInsights } from '../logic.js';
+import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, initTabs, leave, backButton, groupCover, EMOJIS } from '../ui.js';
+import { calculateBalances, computeStats } from '../logic.js';
 import { renderCharts } from '../charts.js';
 import { downloadCSV, downloadPDF } from '../export.js';
 
-const EMOJIS = { food: '🍔', travel: '✈️', entertainment: '🎬', shopping: '🛍️', utilities: '⚡', general: '📦', sports: '⚽', medical: '💊' };
 
-function renderGroup({ group, members, expenses, balances, settlements, insights, currentUserId, inviteLink }) {
+function renderGroup({ group, members, expenses, balances, settlements, currentUserId, inviteLink }) {
   return `
 <div class="page-header">
-  <div>
-    <div class="breadcrumb"><a href="groups.html">Groups</a> / ${h(group.name)}</div>
-    <h1 class="page-title">${h(group.name)}</h1>
-    <span class="category-badge category-${h(group.category)}">${h(group.category)}</span>
+  ${backButton('groups.html')}
+  <div class="group-hero">
+    ${groupCover(group.category)}
+    <div class="page-head-text">
+      <h1 class="page-title">${h(group.name)}</h1>
+      <span class="category-badge category-${h(group.category)}">${h(group.category)}</span>
+    </div>
   </div>
-  <div class="header-actions">
-    <a href="groups.html" class="btn-ghost">← Back to Groups</a>
-    <button type="button" id="btn-csv" class="btn-ghost">⬇ CSV</button>
-    <button type="button" id="btn-pdf" class="btn-ghost">⬇ PDF</button>
-    <a href="add-expense.html?group_id=${h(group.id)}" class="btn-primary">+ Add Expense</a>
-  </div>
+</div>
+
+<!-- Action capsules: all on one line -->
+<div class="capsule-row">
+  <a href="add-expense.html?group_id=${h(group.id)}" class="btn-primary">+ Add Expense</a>
+  <button type="button" id="btn-csv" class="btn-ghost">⬇ CSV</button>
+  <button type="button" id="btn-pdf" class="btn-ghost">⬇ PDF</button>
 </div>
 
 <!-- Tab Navigation -->
@@ -40,20 +43,6 @@ function renderGroup({ group, members, expenses, balances, settlements, insights
     <p>No expenses yet. <a href="add-expense.html?group_id=${h(group.id)}">Add the first one!</a></p>
   </div>
 ` : `
-  <div class="insights-grid">
-    <div class="insight-card">
-      <span class="insight-icon">🧑‍💼</span>
-      <strong>Top spender:</strong> ${h(insights.topSpender)}
-    </div>
-    <div class="insight-card">
-      <span class="insight-icon">🍔</span>
-      <strong>Highest category:</strong> ${h(insights.topCategory)}
-    </div>
-    <div class="insight-card">
-      <span class="insight-icon">📈</span>
-      <strong>Trend:</strong> ${h(insights.monthlyTrend)} (Total: ₹${h(insights.totalSpent)})
-    </div>
-  </div>
   <div class="expense-list">
     ${expenses.map((exp) => `
     <div class="expense-item">
@@ -62,29 +51,23 @@ function renderGroup({ group, members, expenses, balances, settlements, insights
         <div class="expense-info">
           <div class="expense-desc">${h(exp.description)}</div>
           <div class="expense-meta">
-            <span class="badge-category">${h(exp.category)}</span>
-            <span>paid by <strong>${h(exp.paid_by_name)}</strong></span>
-            <span class="expense-date">${h(new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }))}</span>
-            ${exp.notes ? `<span class="note-tag" title="${h(exp.notes)}">📝 note</span>` : ''}
+            <span>${h(exp.paid_by_name)} paid</span>
+            <span>·</span>
+            <span>${h(new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span>
+            ${exp.notes ? `<span class="note-tag" title="${h(exp.notes)}">📝</span>` : ''}
           </div>
-          ${exp.discount > 0 ? `
-          <div class="discount-tag">🏷️ ₹${h(parseFloat(exp.discount).toFixed(0))} discount applied</div>
-          ` : ''}
+          ${exp.discount > 0 ? `<div class="discount-tag">🏷️ ₹${h(parseFloat(exp.discount).toFixed(0))} off</div>` : ''}
+          <div class="expense-actions">
+            <a href="expense.html?id=${h(exp.id)}" class="btn-tiny">View</a>
+            ${(exp.paid_by === currentUserId || exp.created_by === currentUserId) ? `
+            <a href="add-expense.html?group_id=${h(group.id)}&expense_id=${h(exp.id)}" class="btn-tiny">Edit</a>
+            ` : ''}
+            <button type="button" class="btn-tiny btn-danger" data-delete-expense="${h(exp.id)}">✕</button>
+          </div>
         </div>
       </div>
       <div class="expense-right">
         <div class="expense-amount">₹${h((parseFloat(exp.amount) - parseFloat(exp.discount)).toFixed(2))}</div>
-        ${exp.discount > 0 ? `
-        <div class="original-price">₹${h(parseFloat(exp.amount).toFixed(2))}</div>
-        ` : ''}
-        <div class="split-type-tag">${exp.split_type === 'custom' ? '⚙️ custom' : '÷ equal'}</div>
-        <div class="expense-actions">
-          <a href="expense.html?id=${h(exp.id)}" class="btn-tiny">View</a>
-          ${(exp.paid_by === currentUserId || exp.created_by === currentUserId) ? `
-          <a href="add-expense.html?group_id=${h(group.id)}&expense_id=${h(exp.id)}" class="btn-tiny">Edit</a>
-          ` : ''}
-          <button type="button" class="btn-tiny btn-danger" data-delete-expense="${h(exp.id)}">✕</button>
-        </div>
       </div>
     </div>
     `).join('')}
@@ -315,12 +298,11 @@ async function main() {
 
   const balances = calculateBalances(members, expenses, settlements);
   const stats = computeStats(expenses);
-  const insights = computeInsights(stats);
 
   document.title = `${group.name} | Hisaab`;
   const content = document.getElementById('content');
   const inviteLink = new URL('join.html?code=' + encodeURIComponent(group.invite_code), location.href).href;
-  content.innerHTML = renderGroup({ group, members, expenses, balances, settlements, insights, currentUserId, inviteLink });
+  content.innerHTML = renderGroup({ group, members, expenses, balances, settlements, currentUserId, inviteLink });
 
   initTabs((name) => {
     if (name === 'charts') setTimeout(() => renderCharts(stats), 50);

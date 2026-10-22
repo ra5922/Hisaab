@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, leave } from '../ui.js';
+import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
 
 function renderExpense(expense, splits, currentUserId) {
   const effectiveAmount = parseFloat(expense.amount) - (parseFloat(expense.discount) || 0);
@@ -7,15 +7,12 @@ function renderExpense(expense, splits, currentUserId) {
 
   return `
 <div class="page-header">
-  <div>
-    <div class="breadcrumb"><a href="group.html?id=${h(expense.group_id)}">${h(expense.group_name)}</a> / ${h(expense.description)}</div>
+  ${backButton('group.html?id=' + expense.group_id)}
+  <div class="page-head-text">
     <h1 class="page-title">${h(expense.description)}</h1>
     <span class="category-badge category-${h(expense.category)}">${h(expense.category)}</span>
   </div>
-  <div class="header-actions">
-    ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="btn-primary">✏️ Edit</a>` : ''}
-    <a href="group.html?id=${h(expense.group_id)}" class="btn-ghost">← Back to Group</a>
-  </div>
+  ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="btn-primary">✏️ Edit</a>` : ''}
 </div>
 
 <div class="detail-grid">
