@@ -302,7 +302,7 @@ async function main() {
   const settlements = settlementsRes.data.map((s) => ({
     ...s,
     from_name: s.from_profile ? s.from_profile.name : 'Unknown',
-    from_color: s.from_profile ? s.from_profile.avatar_color : '#6366f1',
+    from_color: s.from_profile ? s.from_profile.avatar_color : '#0284c7',
     to_name: s.to_profile ? s.to_profile.name : 'Unknown',
   }));
 

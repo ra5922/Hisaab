@@ -38,7 +38,7 @@ export function toggleTheme() {
   document.documentElement.setAttribute('data-theme', next);
   try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
   const bar = document.querySelector('meta[name=theme-color]');
-  if (bar) bar.content = next === 'light' ? '#f4f4f8' : '#0f0f17';
+  if (bar) bar.content = next === 'light' ? '#eef5fb' : '#0b1220';
   updateThemeButton();
 }
 
@@ -249,7 +249,7 @@ export async function requireUser() {
     id: session.user.id,
     name: (session.user.email || 'you').split('@')[0],
     email: session.user.email,
-    avatar_color: '#6366f1',
+    avatar_color: '#0284c7',
   };
   let me = readCachedProfile(session.user.id);
   if (!me) {

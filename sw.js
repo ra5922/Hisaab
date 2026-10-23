@@ -1,6 +1,6 @@
 // Hisaab service worker: makes the app installable and lets the app shell open offline.
 // Bump VERSION whenever you want every phone to drop its old cached files.
-const VERSION = 'hisaab-v4';
+const VERSION = 'hisaab-v5';
 const SHELL = [
   'login.html', 'signup.html', 'groups.html', 'new-group.html', 'group.html',
   'add-expense.html', 'expense.html', 'activity.html', 'friends.html', 'profile.html', 'join.html',

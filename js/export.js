@@ -55,7 +55,7 @@ export function buildPdf(doc, { group, expenses, members, balances }) {
   };
 
   // ===== HEADER =====
-  rect(0, 0, 595, 80, '#6366f1');
+  rect(0, 0, 595, 80, '#0284c7');
   text('Hisaab - Expense Report', 50, 22, { size: 22, bold: true, color: '#ffffff' });
   text(
     `Group: ${group.name}  |  Category: ${group.category}  |  Exported: ${new Date().toLocaleDateString('en-IN')}`,
@@ -64,14 +64,14 @@ export function buildPdf(doc, { group, expenses, members, balances }) {
 
   // ===== SUMMARY =====
   const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount) - parseFloat(e.discount), 0);
-  text('Summary', 50, 100, { size: 13, bold: true, color: '#1a1a2e' });
+  text('Summary', 50, 100, { size: 13, bold: true, color: '#0f1e2e' });
   text(`Total Expenses: ${expenses.length}`, 50, 118, { color: '#444444' });
   text(`Total Amount Spent: Rs.${total.toFixed(2)}`, 50, 133, { color: '#444444' });
   text(`Members: ${members.map((m) => m.name).join(', ')}`, 50, 148, { color: '#444444' });
 
   // ===== WHO PAYS WHOM =====
   let y = 175;
-  text('Who Pays Whom', 50, y, { size: 13, bold: true, color: '#6366f1' });
+  text('Who Pays Whom', 50, y, { size: 13, bold: true, color: '#0284c7' });
   y += 20;
 
   if (balances.transactions.length === 0) {
@@ -81,16 +81,16 @@ export function buildPdf(doc, { group, expenses, members, balances }) {
   } else {
     balances.transactions.forEach((t) => {
       rect(50, y, 495, 26, '#eef2ff');
-      text(t.from.name, 60, y + 8, { color: '#1a1a2e' });
-      text(`pays  Rs.${t.amount.toFixed(2)}  ->`, 200, y + 8, { bold: true, color: '#6366f1' });
-      text(t.to.name, 360, y + 8, { color: '#1a1a2e' });
+      text(t.from.name, 60, y + 8, { color: '#0f1e2e' });
+      text(`pays  Rs.${t.amount.toFixed(2)}  ->`, 200, y + 8, { bold: true, color: '#0284c7' });
+      text(t.to.name, 360, y + 8, { color: '#0f1e2e' });
       y += 30;
     });
   }
 
   // ===== INDIVIDUAL BALANCES =====
   y += 10;
-  text('Individual Balances', 50, y, { size: 13, bold: true, color: '#6366f1' });
+  text('Individual Balances', 50, y, { size: 13, bold: true, color: '#0284c7' });
   y += 20;
 
   rect(50, y, 495, 22, '#f1f5f9');
@@ -119,10 +119,10 @@ export function buildPdf(doc, { group, expenses, members, balances }) {
   // ===== EXPENSE HISTORY =====
   y += 15;
   if (y > 650) { doc.addPage(); y = 50; }
-  text('Expense History', 50, y, { size: 13, bold: true, color: '#6366f1' });
+  text('Expense History', 50, y, { size: 13, bold: true, color: '#0284c7' });
   y += 20;
 
-  rect(50, y, 495, 22, '#6366f1');
+  rect(50, y, 495, 22, '#0284c7');
   const head = { size: 9, bold: true, color: '#ffffff' };
   text('Date', 55, y + 7, head);
   text('Description', 110, y + 7, head);
@@ -147,7 +147,7 @@ export function buildPdf(doc, { group, expenses, members, balances }) {
 
   // Total row
   if (y > 730) { doc.addPage(); y = 50; }
-  rect(50, y, 495, 24, '#6366f1');
+  rect(50, y, 495, 24, '#0284c7');
   text('TOTAL', 55, y + 7, { bold: true, color: '#ffffff' });
   text(`Rs.${total.toFixed(2)}`, 420, y + 7, { bold: true, color: '#ffffff' });
 }

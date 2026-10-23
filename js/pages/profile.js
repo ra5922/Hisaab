@@ -2,7 +2,7 @@ import { supabase } from '../supabase.js';
 import { h, initial, icon, requireUser, flashFromStorage, showFlash, toggleTheme, currentTheme, confirmBox, cacheProfile, signOut } from '../ui.js';
 
 const APP_VERSION = '1.2';
-const COLORS = ['#8b5cf6', '#6366f1', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+const COLORS = ['#0ea5e9', '#0284c7', '#06b6d4', '#14b8a6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
 const row = (id, ic, tone, title, sub, trailing) => `
   <button type="button" class="menu-row" id="${id}">

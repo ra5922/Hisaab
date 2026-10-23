@@ -18,7 +18,7 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
   }
 
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const textColor = isDark ? '#e8e8f0' : '#1a1a2e';
+  const textColor = isDark ? '#e6eef8' : '#0f1e2e';
 
   Chart.defaults.font.family = "'Space Grotesk', -apple-system, sans-serif";
   Chart.defaults.color = textColor;
@@ -44,7 +44,7 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
     backgroundColor: 'rgba(0,0,0,0.9)',
     titleColor: 'white',
     bodyColor: 'white',
-    borderColor: '#8b5cf6',
+    borderColor: '#0ea5e9',
     borderWidth: 1,
     cornerRadius: 8,
     displayColors: false,
@@ -68,8 +68,8 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
         datasets: [{
           label: '₹ Spent',
           data: SPENDING.values.slice(0, 8),
-          backgroundColor: 'rgba(139, 92, 246, 0.8)',
-          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(14, 165, 233, 0.8)',
+          borderColor: '#0ea5e9',
           borderRadius: 8,
           borderWidth: 2,
         }],
@@ -85,8 +85,8 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
         scales: {
           x: {
             ticks: { callback: (v) => '₹' + Math.round(v), color: textColor, font: { size: 12, weight: 600 } },
-            grid: { color: 'rgba(139, 92, 246, 0.2)' },
-            border: { color: 'rgba(139, 92, 246, 0.3)' },
+            grid: { color: 'rgba(14, 165, 233, 0.2)' },
+            border: { color: 'rgba(14, 165, 233, 0.3)' },
           },
           y: { grid: { display: false }, ticks: { font: { size: 11 }, callback(v) { const l = String(this.getLabelForValue(v)); return l.length > 12 ? l.slice(0, 11) + '…' : l; } } },
         },
@@ -104,7 +104,7 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
         labels: CATEGORY.labels,
         datasets: [{
           data: CATEGORY.values,
-          backgroundColor: ['#8b5cf6', '#22c55e', '#eab308', '#dc2626', '#3b82f6', '#ec4899'],
+          backgroundColor: ['#0ea5e9', '#22c55e', '#eab308', '#dc2626', '#14b8a6', '#ec4899'],
           borderWidth: 3,
           hoverBorderWidth: 5,
           hoverOffset: 6,
@@ -134,8 +134,8 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
         datasets: [{
           label: '₹ Monthly',
           data: MONTHLY.values,
-          borderColor: '#8b5cf6',
-          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
           tension: 0.4,
           fill: true,
           borderWidth: 3,
@@ -151,12 +151,12 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
         scales: {
           y: {
             beginAtZero: true,
-            grid: { color: 'rgba(139, 92, 246, 0.2)' },
+            grid: { color: 'rgba(14, 165, 233, 0.2)' },
             ticks: { color: textColor, font: { size: 12, weight: 500 } },
-            border: { color: 'rgba(139, 92, 246, 0.3)' },
+            border: { color: 'rgba(14, 165, 233, 0.3)' },
           },
           x: {
-            grid: { color: 'rgba(139, 92, 246, 0.1)' },
+            grid: { color: 'rgba(14, 165, 233, 0.1)' },
             ticks: { color: textColor, font: { size: 11 } },
           },
         },

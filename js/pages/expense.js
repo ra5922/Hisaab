@@ -120,7 +120,7 @@ async function main() {
     .map((s) => ({
       ...s,
       name: s.profile ? s.profile.name : 'Unknown',
-      avatar_color: s.profile ? s.profile.avatar_color : '#6366f1',
+      avatar_color: s.profile ? s.profile.avatar_color : '#0284c7',
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
