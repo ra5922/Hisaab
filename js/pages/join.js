@@ -1,43 +1,61 @@
 import { supabase } from '../supabase.js';
-import { showFlash, setFlash, flashFromStorage, redirectIfSignedIn, nextPage, param } from '../ui.js';
+import { h, icon, categoryIcon, param, requireUser, flashFromStorage, setFlash, showFlash, leave } from '../ui.js';
 
-if (!(await redirectIfSignedIn())) {
+async function main() {
+  // If the person is not signed in, this sends them to login and brings them back here afterwards.
+  const ctx = await requireUser();
+  if (!ctx) return;
   flashFromStorage();
 
-  const loginLink = document.querySelector('a[href="login.html"]');
-  if (loginLink && param('next')) loginLink.href = 'login.html?next=' + encodeURIComponent(nextPage());
+  const code = param('code');
+  if (!code) return leave('This invite link is not valid');
 
-  document.getElementById('signup-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const name = form.name.value.trim();
-    const email = form.email.value.trim().toLowerCase();
-    const password = form.password.value;
+  const { data: info, error } = await supabase.rpc('invite_preview', { p_code: code });
+  if (error) {
+    console.error(error);
+    return leave('Could not open the invite link');
+  }
+  if (!info) return leave('This invite link is not valid any more');
 
-    if (!name || !email || !password) return showFlash('error', 'All fields required');
-    if (password.length < 6) return showFlash('error', 'Password must be at least 6 characters');
+  document.title = `Join ${info.name} | Hisaab`;
+  const content = document.getElementById('content');
 
-    const button = form.querySelector('button[type="submit"]');
-    button.disabled = true;
+  if (info.already_member) {
+    content.innerHTML = `
+<div class="form-card join-card">
+  <div class="empty-icon">${icon('checkCircle')}</div>
+  <h2>You are already in ${h(info.name)}</h2>
+  <div class="join-actions">
+    <a href="group.html?id=${h(info.group_id)}" class="btn-primary">Open group ${icon('arrowRight')}</a>
+  </div>
+</div>`;
+    return;
+  }
 
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+  content.innerHTML = `
+<div class="form-card join-card">
+  <div class="empty-icon">${categoryIcon(info.category)}</div>
+  <p class="hint-text">You have been invited to join</p>
+  <h2>${h(info.name)}</h2>
+  <p class="hint-text">${h(info.member_count)} ${info.member_count === 1 ? 'member' : 'members'}</p>
+  <div class="join-actions">
+    <button type="button" id="join-btn" class="btn-primary">Join group</button>
+    <a href="groups.html" class="btn-ghost">Not now</a>
+  </div>
+</div>`;
 
-    // Supabase hides "already registered" by returning a user with no identities
-    const alreadyUsed = data && data.user && data.user.identities && data.user.identities.length === 0;
-    if (error || alreadyUsed) {
-      const msg = alreadyUsed || /already registered/i.test(error.message) ? 'Email already registered' : error.message;
-      showFlash('error', msg);
-      button.disabled = false;
+  document.getElementById('join-btn').addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    const { data: groupId, error: joinError } = await supabase.rpc('join_group', { p_code: code });
+    if (joinError) {
+      console.error(joinError);
+      showFlash('error', joinError.message);
+      e.target.disabled = false;
       return;
     }
-
-    if (data.session) {
-      setFlash('success', `Welcome, ${name}!`);
-      location.href = nextPage();
-    } else {
-      // "Confirm email" is switched on in Supabase: they must click the link in their inbox first
-      setFlash('success', 'Account created! Check your email to confirm it, then log in.');
-      location.href = param('next') ? 'login.html?next=' + encodeURIComponent(nextPage()) : 'login.html';
-    }
+    setFlash('success', `You joined "${info.name}"!`);
+    location.href = `group.html?id=${groupId}`;
   });
 }
+
+main();

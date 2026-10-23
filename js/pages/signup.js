@@ -32,7 +32,7 @@ if (!(await redirectIfSignedIn())) {
     }
 
     if (data.session) {
-      setFlash('success', `Welcome, ${name}! 🎉`);
+      setFlash('success', `Welcome, ${name}!`);
       location.href = nextPage();
     } else {
       // "Confirm email" is switched on in Supabase: they must click the link in their inbox first
