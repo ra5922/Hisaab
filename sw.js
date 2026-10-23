@@ -1,6 +1,6 @@
 // Hisaab service worker: makes the app installable and lets the app shell open offline.
 // Bump VERSION whenever you want every phone to drop its old cached files.
-const VERSION = 'hisaab-v3';
+const VERSION = 'hisaab-v4';
 const SHELL = [
   'login.html', 'signup.html', 'groups.html', 'new-group.html', 'group.html',
   'add-expense.html', 'expense.html', 'activity.html', 'friends.html', 'profile.html', 'join.html',
@@ -52,16 +52,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Our own pages and scripts: try the network first (so updates show up), fall back to the saved copy offline.
+  // Our own pages, styles and scripts: show the saved copy instantly, and quietly fetch a fresh one
+  // for next time. (The old "wait for the network first" way is what caused blank screens between pages.)
   event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put(req, copy));
-        }
-        return res;
+    caches.open(VERSION).then((cache) =>
+      cache.match(req, { ignoreSearch: true }).then((hit) => {
+        const fresh = fetch(req)
+          .then((res) => {
+            if (res && res.ok) cache.put(req, res.clone());
+            return res;
+          })
+          .catch(() => hit || cache.match('login.html'));
+        return hit || fresh;
       })
-      .catch(() => caches.match(req, { ignoreSearch: true }).then((hit) => hit || caches.match('login.html')))
+    )
   );
 });

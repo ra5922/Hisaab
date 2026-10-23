@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, requireUser, flashFromStorage } from '../ui.js';
+import { h, icon, requireUser, flashFromStorage } from '../ui.js';
 
 const money = (n) => '₹' + parseFloat(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
@@ -20,6 +20,10 @@ async function main() {
   flashFromStorage();
   const me = ctx.user.id;
   const content = document.getElementById('content');
+  const cacheKey = 'hisaab_activity_' + me;
+  let cached = null;
+  try { cached = sessionStorage.getItem(cacheKey); } catch (e) { /* ignore */ }
+  if (cached) content.innerHTML = cached;            // last feed, on screen instantly
 
   const [groupsRes, membersRes, expensesRes, settlementsRes] = await Promise.all([
     supabase.from('groups').select('id, name, created_by, created_at, creator:profiles!created_by(name)'),
@@ -35,7 +39,7 @@ async function main() {
   const failure = groupsRes.error || membersRes.error || expensesRes.error || settlementsRes.error;
   if (failure) {
     console.error(failure);
-    content.innerHTML = '<div class="flash flash-error">Could not load activity</div>';
+    if (!cached) content.innerHTML = '<div class="flash flash-error">Could not load activity</div>';
     return;
   }
 
@@ -44,7 +48,7 @@ async function main() {
 
   for (const g of groupsRes.data) {
     events.push({
-      at: g.created_at, icon: '🏁', href: `group.html?id=${g.id}`,
+      at: g.created_at, icon: 'flag', tone: 'pink', href: `group.html?id=${g.id}`,
       text: `<b>${h(who(g.created_by, g.creator && g.creator.name))}</b> created the group <b>${h(g.name)}</b>`,
     });
   }
@@ -53,7 +57,7 @@ async function main() {
   for (const m of membersRes.data) {
     if (m.user_id === createdBy[m.group_id]) continue;   // the creator is covered by "created the group"
     events.push({
-      at: m.joined_at, icon: '👋', href: `group.html?id=${m.group_id}`,
+      at: m.joined_at, icon: 'userPlus', tone: 'blue', href: `group.html?id=${m.group_id}`,
       text: `<b>${h(who(m.user_id, m.profile && m.profile.name))}</b> joined <b>${h(m.group ? m.group.name : 'a group')}</b>`,
     });
   }
@@ -70,7 +74,7 @@ async function main() {
       sub = `You owe ${money(myShare)}`; cls = 'amount-negative';
     }
     events.push({
-      at: e.created_at, icon: '💳', href: `expense.html?id=${e.id}`,
+      at: e.created_at, icon: 'card', tone: '', href: `expense.html?id=${e.id}`,
       text: `<b>${h(who(e.paid_by, e.payer && e.payer.name))}</b> added <b>“${h(e.description)}”</b> in <b>${h(e.group ? e.group.name : 'a group')}</b>`,
       sub, cls, amount: money(net),
     });
@@ -79,7 +83,7 @@ async function main() {
   for (const s of settlementsRes.data) {
     const involvesMe = s.from_user === me || s.to_user === me;
     events.push({
-      at: s.created_at, icon: '✅', href: `group.html?id=${s.group_id}`,
+      at: s.created_at, icon: 'checkCircle', tone: 'green', href: `group.html?id=${s.group_id}`,
       text: `<b>${h(who(s.from_user, s.from_profile && s.from_profile.name))}</b> paid <b>${h(who(s.to_user, s.to_profile && s.to_profile.name))}</b> in <b>${h(s.group ? s.group.name : 'a group')}</b>`,
       sub: involvesMe ? (s.to_user === me ? 'You received this' : 'You paid this') : '',
       cls: s.to_user === me ? 'amount-positive' : '', amount: money(s.amount),
@@ -98,16 +102,16 @@ async function main() {
 </div>`;
 
   if (shown.length === 0) {
-    html += `<div class="empty-state"><div class="empty-icon">🕒</div><h2>Nothing yet</h2><p>Create a group or add an expense and it will show up here.</p><a href="new-group.html" class="btn-primary">Create a group</a></div>`;
+    html += `<div class="empty-state"><div class="empty-icon">${icon('clock')}</div><h2>Nothing yet</h2><p>Create a group or add an expense and it will show up here.</p><a href="new-group.html" class="btn-primary">Create a group</a></div>`;
   } else {
     let last = '';
     html += '<div class="activity-list">';
-    shown.forEach((ev, i) => {
+    shown.forEach((ev) => {
       const label = dayLabel(ev.at);
       if (label !== last) { html += `</div><div class="date-label">${h(label)}</div><div class="activity-list">`; last = label; }
       html += `
-      <a href="${h(ev.href)}" class="activity-item" style="animation-delay:${Math.min(i, 10) * 30}ms">
-        <span class="activity-icon">${ev.icon}</span>
+      <a href="${h(ev.href)}" class="activity-item">
+        <span class="activity-icon ${ev.tone}">${icon(ev.icon)}</span>
         <div class="activity-text">
           ${ev.text}
           ${ev.sub ? `<div class="activity-sub ${h(ev.cls)}">${h(ev.sub)} · ${h(time(ev.at))}</div>` : `<div class="activity-sub">${h(time(ev.at))}</div>`}
@@ -117,7 +121,8 @@ async function main() {
     });
     html += '</div>';
   }
-  content.innerHTML = html;
+  if (html !== cached) content.innerHTML = html;
+  try { sessionStorage.setItem(cacheKey, html); } catch (e) { /* ignore */ }
 }
 
 main();

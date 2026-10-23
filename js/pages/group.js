@@ -1,11 +1,23 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, initTabs, leave, backButton, groupCover, EMOJIS } from '../ui.js';
+import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, initTabs, leave, backButton, groupCover, categoryIcon, icon, confirmBox, loadScript } from '../ui.js';
 import { calculateBalances, computeStats } from '../logic.js';
 import { renderCharts } from '../charts.js';
 import { downloadCSV, downloadPDF } from '../export.js';
 
+const CHART_JS = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+const JSPDF = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+
+const TABS = [
+  ['expenses', 'card', 'Expenses'],
+  ['balances', 'scale', 'Balances'],
+  ['settle', 'checkCircle', 'Settle Up'],
+  ['members', 'groups', 'Members'],
+  ['charts', 'chart', 'Charts'],
+  ['history', 'clock', 'History'],
+];
 
 function renderGroup({ group, members, expenses, balances, settlements, currentUserId, inviteLink }) {
+  const isCreator = group.created_by === currentUserId;
   return `
 <div class="page-header">
   ${backButton('groups.html')}
@@ -16,58 +28,52 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
       <span class="category-badge category-${h(group.category)}">${h(group.category)}</span>
     </div>
   </div>
+  ${isCreator ? `<button type="button" class="icon-btn danger" id="delete-group-top" aria-label="Delete group" title="Delete group">${icon('trash')}</button>` : ''}
 </div>
 
-<!-- Action capsules: all on one line -->
-<div class="capsule-row">
-  <a href="add-expense.html?group_id=${h(group.id)}" class="btn-primary">+ Add Expense</a>
-  <button type="button" id="btn-csv" class="btn-ghost">⬇ CSV</button>
-  <button type="button" id="btn-pdf" class="btn-ghost">⬇ PDF</button>
-</div>
-
-<!-- Tab Navigation -->
-<div class="tabs">
-  <button class="tab active" data-tab="expenses">💳 Expenses</button>
-  <button class="tab" data-tab="balances">⚖️ Balances</button>
-  <button class="tab" data-tab="settle">✅ Settle Up</button>
-  <button class="tab" data-tab="members">👥 Members</button>
-  <button class="tab" data-tab="charts">📊 Charts</button>
-  <button class="tab" data-tab="history">🕒 History</button>
+<!-- One line: tabs on the left, CSV + PDF on the right -->
+<div class="toolbar">
+  <div class="tool-tabs" role="tablist">
+    ${TABS.map(([key, ic, label], i) => `
+    <button class="tab${i === 0 ? ' active' : ''}" data-tab="${key}" role="tab" aria-label="${label}" title="${label}">${icon(ic)}<span class="tab-label">${label}</span></button>`).join('')}
+  </div>
+  <div class="tool-actions">
+    <button type="button" id="btn-csv" class="btn-ghost" aria-label="Download CSV">${icon('download')}CSV</button>
+    <button type="button" id="btn-pdf" class="btn-ghost" aria-label="Download PDF">${icon('download')}PDF</button>
+  </div>
 </div>
 
 <!-- EXPENSES TAB -->
 <div id="tab-expenses" class="tab-content active">
   ${expenses.length === 0 ? `
   <div class="empty-state small">
-    <div class="empty-icon">💸</div>
-    <p>No expenses yet. <a href="add-expense.html?group_id=${h(group.id)}">Add the first one!</a></p>
+    <div class="empty-icon">${icon('wallet')}</div>
+    <p>No expenses yet. Tap <b>Add Expense</b> to add the first one.</p>
   </div>
 ` : `
   <div class="expense-list">
     ${expenses.map((exp) => `
     <div class="expense-item">
-      <div class="expense-left">
-        <span class="expense-category-icon">${h(EMOJIS[exp.category] || '📦')}</span>
+      <a class="expense-main" href="expense.html?id=${h(exp.id)}">
+        <span class="expense-category-icon">${categoryIcon(exp.category)}</span>
         <div class="expense-info">
           <div class="expense-desc">${h(exp.description)}</div>
           <div class="expense-meta">
             <span>${h(exp.paid_by_name)} paid</span>
             <span>·</span>
             <span>${h(new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span>
-            ${exp.notes ? `<span class="note-tag" title="${h(exp.notes)}">📝</span>` : ''}
+            ${exp.notes ? `<span class="note-tag" title="${h(exp.notes)}">${icon('note')}</span>` : ''}
           </div>
-          ${exp.discount > 0 ? `<div class="discount-tag">🏷️ ₹${h(parseFloat(exp.discount).toFixed(0))} off</div>` : ''}
-          <div class="expense-actions">
-            <a href="expense.html?id=${h(exp.id)}" class="btn-tiny">View</a>
-            ${(exp.paid_by === currentUserId || exp.created_by === currentUserId) ? `
-            <a href="add-expense.html?group_id=${h(group.id)}&expense_id=${h(exp.id)}" class="btn-tiny">Edit</a>
-            ` : ''}
-            <button type="button" class="btn-tiny btn-danger" data-delete-expense="${h(exp.id)}">✕</button>
-          </div>
+          ${exp.discount > 0 ? `<div class="discount-tag">${icon('tag')} ₹${h(parseFloat(exp.discount).toFixed(0))} off</div>` : ''}
         </div>
-      </div>
+      </a>
       <div class="expense-right">
         <div class="expense-amount">₹${h((parseFloat(exp.amount) - parseFloat(exp.discount)).toFixed(2))}</div>
+        <div class="expense-actions">
+          ${(exp.paid_by === currentUserId || exp.created_by === currentUserId) ? `
+          <a href="add-expense.html?group_id=${h(group.id)}&expense_id=${h(exp.id)}" class="mini-btn" aria-label="Edit expense">${icon('edit')}</a>` : ''}
+          <button type="button" class="mini-btn danger" data-delete-expense="${h(exp.id)}" aria-label="Delete expense">${icon('trash')}</button>
+        </div>
       </div>
     </div>
     `).join('')}
@@ -88,7 +94,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
         ` : u.net < -0.01 ? `
           <span class="amount-negative">owes ₹${h(Math.abs(u.net).toFixed(2))}</span>
         ` : `
-          <span class="amount-zero">settled up ✓</span>
+          <span class="amount-zero">${icon('check')} settled up</span>
         `}
       </div>
     </div>
@@ -106,7 +112,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
       </div>
       <div class="transaction-arrow">
         <span>pays ₹${h(t.amount.toFixed(2))}</span>
-        <span>→</span>
+        ${icon('arrowRight')}
       </div>
       <div class="transaction-to">
         <span class="avatar-dot-sm" style="background:${h(t.to.avatar_color)}">${initial(t.to.name)}</span>
@@ -116,7 +122,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
     `).join('')}
   </div>
   ` : `
-  <div class="all-settled"><span>🎉</span> All settled up!</div>
+  <div class="all-settled">${icon('checkCircle')} All settled up!</div>
   `}
 </div>
 
@@ -129,7 +135,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
         <div class="form-group">
           <label>You are paying</label>
           <select name="to_user" required>
-            <option value="">— Select person —</option>
+            <option value="">Select person</option>
             ${members.filter((m) => m.id !== currentUserId).map((m) => `
             <option value="${h(m.id)}">${h(m.name)}</option>
             `).join('')}
@@ -144,7 +150,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
         <label>Note <span class="hint">(optional)</span></label>
         <input type="text" name="note" placeholder="UPI transfer, cash, etc.">
       </div>
-      <button type="submit" class="btn-primary">Record Settlement ✓</button>
+      <button type="submit" class="btn-primary">${icon('check')} Record Settlement</button>
     </form>
   </div>
 </div>
@@ -156,18 +162,18 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
     <p class="hint-text">Anyone who opens this link and signs in joins the group. Send it on WhatsApp, SMS, anywhere.</p>
     <div class="invite-row">
       <input type="text" id="invite-link" value="${h(inviteLink)}" readonly>
-      <button type="button" id="copy-invite" class="btn-primary">Copy link</button>
+      <button type="button" id="copy-invite" class="btn-primary">${icon('copy')} Copy link</button>
     </div>
     <div class="invite-actions">
       <a id="share-whatsapp" class="btn-ghost" target="_blank" rel="noopener"
-         href="https://wa.me/?text=${encodeURIComponent('Join "' + group.name + '" on Hisaab: ' + inviteLink)}">Share on WhatsApp</a>
-      <button type="button" id="share-native" class="btn-ghost" style="display:none">Share…</button>
-      ${group.created_by === currentUserId ? `
-      <button type="button" id="reset-invite" class="btn-ghost">Make a new link</button>
+         href="https://wa.me/?text=${encodeURIComponent('Join "' + group.name + '" on Hisaab: ' + inviteLink)}">${icon('share')} WhatsApp</a>
+      <button type="button" id="share-native" class="btn-ghost" style="display:none">${icon('share')} Share</button>
+      ${isCreator ? `
+      <button type="button" id="reset-invite" class="btn-ghost">${icon('link')} New link</button>
       ` : ''}
     </div>
-    ${group.created_by === currentUserId ? `
-    <p class="hint-text">"Make a new link" switches off the old link, for example if it reached the wrong people.</p>
+    ${isCreator ? `
+    <p class="hint-text">"New link" switches off the old link, for example if it reached the wrong people.</p>
     ` : ''}
   </div>
 
@@ -179,7 +185,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
         <input type="text" name="emails" placeholder="friend@example.com, another@example.com" required>
         <p class="hint-text">They must already have a Hisaab account. If not, send them the invite link above.</p>
       </div>
-      <button type="submit" class="btn-primary">Add to group</button>
+      <button type="submit" class="btn-primary">${icon('userPlus')} Add to group</button>
     </form>
   </div>
 
@@ -196,6 +202,14 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
     </div>
     `).join('')}
   </div>
+
+  ${isCreator ? `
+  <div class="danger-zone">
+    <h4>Danger zone</h4>
+    <p class="hint-text">Deleting the group removes every expense and payment in it for everyone. This cannot be undone.</p>
+    <button type="button" id="delete-group" class="btn-danger">${icon('trash')} Delete group</button>
+  </div>
+  ` : ''}
 </div>
 
 <!-- CHARTS TAB -->
@@ -203,22 +217,22 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
   <div class="charts-grid">
     <div class="chart-card">
       <h3>Spending by Person</h3>
-      <canvas id="spendingChart" width="400" height="250"></canvas>
+      <div class="chart-box"><canvas id="spendingChart"></canvas></div>
     </div>
     <div class="chart-card">
       <h3>By Category</h3>
-      <canvas id="categoryChart" width="400" height="250"></canvas>
+      <div class="chart-box"><canvas id="categoryChart"></canvas></div>
     </div>
-    <div class="chart-card">
+    <div class="chart-card wide">
       <h3>Monthly Trend</h3>
-      <canvas id="monthlyChart" width="400" height="250"></canvas>
+      <div class="chart-box"><canvas id="monthlyChart"></canvas></div>
     </div>
   </div>
 </div>
 
 <!-- HISTORY TAB -->
 <div id="tab-history" class="tab-content">
-  <h3 class="section-title">Settlement History</h3>
+  <h3 class="section-title" style="margin-top:0">Settlement History</h3>
   ${settlements.length === 0 ? `
   <div class="empty-state small"><p>No settlements recorded yet.</p></div>
   ` : `
@@ -238,14 +252,10 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
     `).join('')}
   </div>
   `}
+</div>
 
-  ${group.created_by === currentUserId ? `
-  <div class="danger-zone">
-    <h4>Danger Zone</h4>
-    <button type="button" id="delete-group" class="btn-danger">🗑️ Delete Group</button>
-  </div>
-  ` : ''}
-</div>`;
+<!-- Floating Add Expense capsule, bottom-right -->
+<a href="add-expense.html?group_id=${h(group.id)}" class="btn-primary fab" aria-label="Add expense">${icon('plus')} Add Expense</a>`;
 }
 
 async function main() {
@@ -303,15 +313,32 @@ async function main() {
   const content = document.getElementById('content');
   const inviteLink = new URL('join.html?code=' + encodeURIComponent(group.invite_code), location.href).href;
   content.innerHTML = renderGroup({ group, members, expenses, balances, settlements, currentUserId, inviteLink });
+  document.querySelector('.main-content').classList.add('has-fab');
 
+  // Chart.js is big, so it is only downloaded the first time the Charts tab opens
+  let chartsDrawn = false;
   initTabs((name) => {
-    if (name === 'charts') setTimeout(() => renderCharts(stats), 50);
+    const active = document.querySelector('.tab.active');
+    if (active && active.scrollIntoView) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+    if (name !== 'charts') return;
+    if (chartsDrawn) {
+      if (window.Chart) ['spendingChart', 'categoryChart', 'monthlyChart'].forEach((cid) => {
+        const c = window.Chart.getChart(document.getElementById(cid));
+        if (c) c.resize();
+      });
+      return;
+    }
+    chartsDrawn = true;
+    loadScript(CHART_JS)
+      .then(() => requestAnimationFrame(() => renderCharts(stats)))
+      .catch(() => { chartsDrawn = false; showFlash('error', 'Could not load charts. Check your connection.'); });
   });
 
   // ----- Export -----
   document.getElementById('btn-csv').addEventListener('click', () => downloadCSV(group, expenses));
-  document.getElementById('btn-pdf').addEventListener('click', () => {
+  document.getElementById('btn-pdf').addEventListener('click', async () => {
     try {
+      await loadScript(JSPDF);
       downloadPDF({ group, expenses, members, balances });
     } catch (err) {
       console.error(err);
@@ -323,7 +350,7 @@ async function main() {
   content.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-delete-expense]');
     if (!btn) return;
-    if (!confirm('Delete this expense?')) return;
+    if (!(await confirmBox({ title: 'Delete this expense?', message: 'It will be removed for everyone in the group.', confirmText: 'Delete', danger: true }))) return;
 
     const { data, error } = await supabase.from('expenses').delete().eq('id', btn.dataset.deleteExpense).select();
     if (error || !data || data.length === 0) {
@@ -382,7 +409,7 @@ async function main() {
   const resetBtn = document.getElementById('reset-invite');
   if (resetBtn) {
     resetBtn.addEventListener('click', async () => {
-      if (!confirm('Make a new invite link? The old link will stop working.')) return;
+      if (!(await confirmBox({ title: 'Make a new invite link?', message: 'The old link will stop working.', confirmText: 'Make new link' }))) return;
       const { error } = await supabase.rpc('reset_invite_code', { p_group_id: Number(id) });
       if (error) {
         console.error(error);
@@ -418,20 +445,27 @@ async function main() {
     location.reload();
   });
 
-  // ----- Delete the group (creator only) -----
-  const deleteGroup = document.getElementById('delete-group');
-  if (deleteGroup) {
-    deleteGroup.addEventListener('click', async () => {
-      if (!confirm('Delete this entire group and all its expenses? This cannot be undone.')) return;
-      const { data, error } = await supabase.from('groups').delete().eq('id', id).select();
-      if (error || !data || data.length === 0) {
-        console.error(error);
-        return showFlash('error', 'Only the group creator can delete it');
-      }
-      setFlash('success', 'Group deleted');
-      location.href = 'groups.html';
+  // ----- Delete the group (creator only): trash button in the header + button in the Members tab -----
+  const askDeleteGroup = async () => {
+    const ok = await confirmBox({
+      title: `Delete "${group.name}"?`,
+      message: 'This removes the group with every expense and payment in it, for everyone. It cannot be undone.',
+      confirmText: 'Delete group',
+      danger: true,
     });
-  }
+    if (!ok) return;
+    const { data, error } = await supabase.from('groups').delete().eq('id', id).select();
+    if (error || !data || data.length === 0) {
+      console.error(error);
+      return showFlash('error', 'Only the group creator can delete it');
+    }
+    setFlash('success', 'Group deleted');
+    location.href = 'groups.html';
+  };
+  ['delete-group', 'delete-group-top'].forEach((bid) => {
+    const b = document.getElementById(bid);
+    if (b) b.addEventListener('click', askDeleteGroup);
+  });
 }
 
 main();

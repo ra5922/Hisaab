@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, requireUser, flashFromStorage, showFlash, setFlash } from '../ui.js';
+import { h, initial, icon, requireUser, flashFromStorage, showFlash, setFlash } from '../ui.js';
 
 const money = (n) => '₹' + Math.abs(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
@@ -56,16 +56,16 @@ async function main() {
 </div>
 
 ${friends.length === 0 ? `
-<div class="empty-state small"><div class="empty-icon">🙋</div><p>No friends yet. Add someone below to get started.</p></div>
+<div class="empty-state small"><div class="empty-icon">${icon('friends')}</div><p>No friends yet. Add someone below to get started.</p></div>
 ` : `
 <div class="friends-list">
-  ${friends.map((f, i) => {
+  ${friends.map((f) => {
     const b = bal[f.id] || 0;
     const meta = b > 0.01 ? `<span class="amount-positive">owes you<br>${h(money(b))}</span>`
       : b < -0.01 ? `<span class="amount-negative">you owe<br>${h(money(b))}</span>`
       : `<span class="amount-zero">settled up</span>`;
     return `
-  <div class="friend-row" style="animation-delay:${Math.min(i, 10) * 40}ms">
+  <div class="friend-row">
     <span class="avatar-dot" style="background:${h(f.avatar_color)}">${initial(f.name)}</span>
     <div class="friend-info">
       <strong>${h(f.name)}</strong>
@@ -77,7 +77,7 @@ ${friends.length === 0 ? `
 </div>`}
 
 <div class="add-friend-wrap">
-  <button type="button" id="add-friend" class="btn-primary add-friend-capsule">＋ Add a friend</button>
+  <button type="button" id="add-friend" class="btn-primary add-friend-capsule">${icon('userPlus')} Add a friend</button>
 </div>
 
 <div class="modal" id="friend-modal" role="dialog" aria-modal="true" aria-labelledby="friend-title">

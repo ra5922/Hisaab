@@ -21,12 +21,12 @@
   <script src="js/pwa.js" defer></script>
 </head>
 <body>
-  <div id="nav"></div>
+  <div id="nav"><div class="bottom-nav" aria-hidden="true"></div></div>
   <main class="main-content">
     <div id="flash"></div>
 
     <div class="page-header">
-      <a href="groups.html" class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <a href="groups.html" class="back-btn" aria-label="Back"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
       <div class="page-head-text">
         <h1 class="page-title">Create Group</h1>
         <p class="page-subtitle">Set up a new expense group</p>
@@ -43,14 +43,14 @@
           <div class="form-group">
             <label>Category</label>
             <select name="category">
-              <option value="general">📦 General</option>
-              <option value="food">🍔 Food</option>
-              <option value="travel">✈️ Travel</option>
-              <option value="entertainment">🎬 Entertainment</option>
-              <option value="shopping">🛍️ Shopping</option>
-              <option value="utilities">⚡ Utilities</option>
-              <option value="sports">⚽ Sports</option>
-              <option value="medical">💊 Medical</option>
+              <option value="general">General</option>
+              <option value="food">Food</option>
+              <option value="travel">Travel</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="shopping">Shopping</option>
+              <option value="utilities">Utilities</option>
+              <option value="sports">Sports</option>
+              <option value="medical">Medical</option>
             </select>
           </div>
         </div>
@@ -61,7 +61,7 @@
           <p class="hint-text">Enter the email each friend used to sign up, separated by commas.</p>
         </div>
 
-        <button type="submit" class="btn-primary">Create Group →</button>
+        <button type="submit" class="btn-primary">Create Group</button>
       </form>
     </div>
   </main>

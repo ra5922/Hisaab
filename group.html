@@ -12,6 +12,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Hisaab">
   <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="modulepreload" href="js/config.js">
+  <link rel="modulepreload" href="js/supabase.js">
+  <link rel="modulepreload" href="js/ui.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm">
   <title>Group | Hisaab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -21,15 +26,17 @@
   <script src="js/pwa.js" defer></script>
 </head>
 <body>
-  <div id="nav"></div>
+  <div id="nav"><div class="bottom-nav" aria-hidden="true"></div></div>
   <main class="main-content">
     <div id="flash"></div>
-    <div id="content"></div>
+    <div id="content"><div class="skeleton" aria-hidden="true">
+      <div class="sk sk-title"></div>
+      <div class="sk sk-pill"></div>
+      <div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div>
+    </div></div>
   </main>
 
-  <!-- Libraries for the charts and the PDF export -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- Chart.js and jsPDF are loaded on demand by js/pages/group.js -->
   <script type="module" src="js/pages/group.js"></script>
 </body>
 </html>

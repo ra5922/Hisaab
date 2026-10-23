@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
+import { h, initial, icon, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton, confirmBox } from '../ui.js';
 
 function renderExpense(expense, splits, currentUserId) {
   const effectiveAmount = parseFloat(expense.amount) - (parseFloat(expense.discount) || 0);
@@ -12,7 +12,7 @@ function renderExpense(expense, splits, currentUserId) {
     <h1 class="page-title">${h(expense.description)}</h1>
     <span class="category-badge category-${h(expense.category)}">${h(expense.category)}</span>
   </div>
-  ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="btn-primary">✏️ Edit</a>` : ''}
+  ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="btn-primary">${icon('edit')} Edit</a>` : ''}
 </div>
 
 <div class="detail-grid">
@@ -70,7 +70,7 @@ function renderExpense(expense, splits, currentUserId) {
         <div class="split-detail">
           owes <span class="split-amount">₹${h(parseFloat(split.amount_owed).toLocaleString('en-IN'))}</span>
           ${split.is_settled ? `
-            <span class="settled-badge">✓ Settled</span>
+            <span class="settled-badge">${icon('check')} Settled</span>
           ` : ''}
         </div>
       </div>
@@ -82,7 +82,7 @@ function renderExpense(expense, splits, currentUserId) {
 ${expense.paid_by === currentUserId ? `
 <div class="danger-zone">
   <h4>Delete Expense</h4>
-  <button type="button" id="delete-expense" class="btn-danger">🗑️ Delete</button>
+  <button type="button" id="delete-expense" class="btn-danger">${icon('trash')} Delete expense</button>
 </div>
 ` : ''}`;
 }
@@ -130,7 +130,7 @@ async function main() {
   const del = document.getElementById('delete-expense');
   if (del) {
     del.addEventListener('click', async () => {
-      if (!confirm('Delete this expense? Cannot be undone.')) return;
+      if (!(await confirmBox({ title: 'Delete this expense?', message: 'This cannot be undone.', confirmText: 'Delete', danger: true }))) return;
       const { data: removed, error: delError } = await supabase.from('expenses').delete().eq('id', id).select();
       if (delError || !removed || removed.length === 0) {
         console.error(delError);

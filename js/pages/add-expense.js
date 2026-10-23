@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
+import { h, initial, icon, CATEGORIES, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
 import { round2, splitEqually, splitCustom } from '../logic.js';
 
 function renderForm(group, members, currentUserId, expense) {
@@ -8,10 +8,7 @@ function renderForm(group, members, currentUserId, expense) {
   if (editing) expense.splits.forEach((s) => { sharesById[s.user_id] = s; });
   const isCustom = editing && expense.split_type === 'custom';
   const selectedPayer = editing ? expense.paid_by : currentUserId;
-  const categories = [
-    ['general', '📦 General'], ['food', '🍔 Food'], ['travel', '✈️ Travel'], ['entertainment', '🎬 Entertainment'],
-    ['shopping', '🛍️ Shopping'], ['utilities', '⚡ Utilities'], ['sports', '⚽ Sports'], ['medical', '💊 Medical'],
-  ];
+  const categories = CATEGORIES;
   // Custom shares are typed as parts of the full amount (the discount is applied on top), so undo that here
   const rawShare = (userId) => {
     const s = sharesById[userId];
@@ -68,11 +65,11 @@ function renderForm(group, members, currentUserId, expense) {
       <div class="split-toggle">
         <label class="split-option">
           <input type="radio" name="split_type" value="equal" ${isCustom ? '' : 'checked'}>
-          <span>÷ Equal Split</span>
+          <span>Equal split</span>
         </label>
         <label class="split-option">
           <input type="radio" name="split_type" value="custom" ${isCustom ? 'checked' : ''}>
-          <span>⚙️ Custom Amounts</span>
+          <span>Custom amounts</span>
         </label>
       </div>
     </div>
@@ -122,7 +119,7 @@ function renderForm(group, members, currentUserId, expense) {
       <textarea name="notes" rows="2" placeholder="Any additional details...">${editing ? h(expense.notes || '') : ''}</textarea>
     </div>
 
-    <button type="submit" class="btn-primary w-full">${editing ? 'Save Changes →' : 'Add Expense →'}</button>
+    <button type="submit" class="btn-primary w-full">${icon('check')} ${editing ? 'Save Changes' : 'Add Expense'}</button>
   </form>
 </div>`;
 }
@@ -190,7 +187,7 @@ async function main() {
     const ok = Math.abs(parseFloat(diff)) < 0.02;
     const discount = parseFloat(discountEl.value) || 0;
     document.getElementById('customPreview').innerHTML = `<span class="preview-text ${ok ? 'preview-ok' : 'preview-warn'}">
-    Entered: ₹${sum.toFixed(2)} / Total: ₹${total.toFixed(2)} ${ok ? '✓ Balanced' : `(${diff > 0 ? '+' : ''}${diff} remaining)`}${discount > 0 ? ` · after ₹${discount.toFixed(2)} discount: ₹${(total - discount).toFixed(2)}` : ''}
+    Entered: ₹${sum.toFixed(2)} / Total: ₹${total.toFixed(2)} ${ok ? '- balanced' : `(${diff > 0 ? '+' : ''}${diff} remaining)`}${discount > 0 ? ` · after ₹${discount.toFixed(2)} discount: ₹${(total - discount).toFixed(2)}` : ''}
   </span>`;
   }
 

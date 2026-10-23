@@ -10,14 +10,9 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
   const MONTHLY = { labels: monthlyData.map((r) => r.month), values: monthlyData.map((r) => r.total) };
 
   if (SPENDING.labels.length === 0 && CATEGORY.labels.length === 0) {
-    document.querySelectorAll('.chart-card canvas').forEach((canvas) => canvas.remove());
-    document.querySelectorAll('.chart-card').forEach((card) => {
-      if (!card.querySelector('.no-data')) {
-        card.insertAdjacentHTML(
-          'beforeend',
-          '<div class="no-data" style="color:var(--text-muted);padding:2rem;text-align:center;font-style:italic;">Add expenses to see charts! 📊</div>'
-        );
-      }
+    document.querySelectorAll('.chart-box').forEach((box) => {
+      box.style.height = 'auto';
+      box.innerHTML = '<div class="no-data">Add expenses to see charts.</div>';
     });
     return;
   }
@@ -27,9 +22,12 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
 
   Chart.defaults.font.family = "'Space Grotesk', -apple-system, sans-serif";
   Chart.defaults.color = textColor;
-  Chart.defaults.font.size = 13;
+  Chart.defaults.font.size = 12;
+  Chart.defaults.maintainAspectRatio = false;   // the chart fills its .chart-box instead of keeping its own shape
+  Chart.defaults.responsive = true;
   Chart.defaults.font.weight = 500;
-  Chart.defaults.plugins.tooltip.padding = 12;
+  Chart.defaults.animation = { duration: 350 };
+  Chart.defaults.plugins.tooltip.padding = 10;
   Chart.defaults.plugins.tooltip.titleFont = { size: 14, weight: 600 };
   Chart.defaults.plugins.tooltip.bodyFont = { size: 13 };
 
@@ -90,12 +88,10 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
             grid: { color: 'rgba(139, 92, 246, 0.2)' },
             border: { color: 'rgba(139, 92, 246, 0.3)' },
           },
-          y: { ticks: { font: { size: 11 } } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 }, callback(v) { const l = String(this.getLabelForValue(v)); return l.length > 12 ? l.slice(0, 11) + '…' : l; } } },
         },
         onHover: pointer,
-        animation: { duration: 800, easing: 'easeOutQuart' },
-        hover: { animationDuration: 200, mode: 'nearest' },
-      },
+              },
     });
   }
 
@@ -120,10 +116,9 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
         cutout: '65%',
         interaction: { intersect: false },
         plugins: {
-          legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' } },
+          legend: { position: 'bottom', labels: { padding: 14, boxWidth: 10, usePointStyle: true, pointStyle: 'circle' } },
           tooltip: tooltip((context) => '₹' + context.parsed.toLocaleString()),
         },
-        animation: { duration: 1000, easing: 'easeOutBounce' },
         onHover: pointer,
       },
     });
@@ -165,9 +160,7 @@ export function renderCharts({ spendingData, categoryData, monthlyData }) {
             ticks: { color: textColor, font: { size: 11 } },
           },
         },
-        hover: { animationDuration: 200, mode: 'index' },
-        animation: { duration: 1000, easing: 'easeOutQuart' },
-        onHover: pointer,
+                onHover: pointer,
       },
     });
   }
