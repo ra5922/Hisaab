@@ -13,7 +13,7 @@ async function main() {
   const { data: info, error } = await supabase.rpc('invite_preview', { p_code: code });
   if (error) {
     console.error(error);
-    return leave('Could not open the invite link');
+    return leave('Could not open the invite link: ' + (error.message || 'unknown error'));
   }
   if (!info) return leave('This invite link is not valid any more');
 

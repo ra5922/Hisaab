@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, icon, requireUser, flashFromStorage, showFlash, toggleTheme, currentTheme, confirmBox, cacheProfile, signOut } from '../ui.js';
+import { h, siteUrl, initial, icon, requireUser, flashFromStorage, showFlash, toggleTheme, currentTheme, confirmBox, cacheProfile, signOut } from '../ui.js';
 
 const APP_VERSION = '1.2';
 const COLORS = ['#8b5cf6', '#6366f1', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
@@ -161,7 +161,7 @@ async function main() {
 
     // ----- Invite friends to the app -----
     document.getElementById('invite-app').addEventListener('click', async () => {
-      const url = new URL('login.html', location.href).href;
+      const url = siteUrl('login.html');
       const text = 'Split expenses with me on Hisaab';
       if (navigator.share) {
         try { await navigator.share({ title: 'Hisaab', text, url }); } catch (e) { /* cancelled */ }

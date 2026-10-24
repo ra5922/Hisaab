@@ -29,11 +29,16 @@ async function main() {
 
     if (error) {
       console.error(error);
-      showFlash('error', 'Could not create group');
+      showFlash('error', 'Could not create group: ' + (error.message || 'unknown error'));
       button.disabled = false;
       return;
     }
 
+    if (!data || !data.group_id) {
+      showFlash('error', 'Could not create group: the server sent back nothing. Run supabase-update-2.sql in Supabase.');
+      button.disabled = false;
+      return;
+    }
     const missing = (data && data.missing) || [];
     if (missing.length > 0) {
       setFlash('error', `Group "${name}" created, but these people have not signed up yet: ${missing.join(', ')}`);

@@ -13,6 +13,14 @@ export const initial = (name) => h(String(name || '?')[0].toUpperCase());
 export const param = (name) => new URLSearchParams(location.search).get(name);
 
 // "next" = the page to open after logging in (e.g. an invite link). Only same-site pages are accepted.
+// Address friends should open. When you are testing on your own computer the page address is
+// localhost, which only works on that computer, so use the live site instead.
+export const LIVE_SITE = 'https://hisaab-teal.vercel.app/';
+export function siteUrl(path) {
+  const local = /^(localhost|127\.|192\.168\.|10\.|0\.0\.0\.0)/.test(location.hostname) || location.protocol === 'file:';
+  return new URL(path, local ? LIVE_SITE : location.href).href;
+}
+
 export function nextPage() {
   const next = param('next');
   return next && /^[a-z0-9-]+\.html(\?[^#]*)?$/i.test(next) ? next : 'groups.html';

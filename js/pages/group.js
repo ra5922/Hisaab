@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, param, requireUser, flashFromStorage, setFlash, showFlash, initTabs, leave, backButton, groupCover, categoryIcon, icon, confirmBox, loadScript } from '../ui.js';
+import { h, siteUrl, initial, param, requireUser, flashFromStorage, setFlash, showFlash, initTabs, leave, backButton, groupCover, categoryIcon, icon, confirmBox, loadScript } from '../ui.js';
 import { calculateBalances, computeStats } from '../logic.js';
 import { renderCharts } from '../charts.js';
 import { downloadCSV, downloadPDF } from '../export.js';
@@ -316,7 +316,7 @@ async function main() {
 
   document.title = `${group.name} | Hisaab`;
   const content = document.getElementById('content');
-  const inviteLink = new URL('join.html?code=' + encodeURIComponent(group.invite_code), location.href).href;
+  const inviteLink = siteUrl('join.html?code=' + encodeURIComponent(group.invite_code));
   content.innerHTML = renderGroup({ group, members, expenses, balances, settlements, currentUserId, inviteLink });
   document.querySelector('.main-content').classList.add('has-fab');
 
