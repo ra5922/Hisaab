@@ -18,17 +18,23 @@ const TABS = [
 
 function renderGroup({ group, members, expenses, balances, settlements, currentUserId, inviteLink }) {
   const isCreator = group.created_by === currentUserId;
+  const totalSpent = expenses.reduce((t, e) => t + (parseFloat(e.amount) - parseFloat(e.discount || 0)), 0);
   return `
 <div class="page-header">
   ${backButton('groups.html')}
-  <div class="group-hero">
-    ${groupCover(group.category)}
-    <div class="page-head-text">
-      <h1 class="page-title">${h(group.name)}</h1>
-      <span class="category-badge category-${h(group.category)}">${h(group.category)}</span>
-    </div>
+  <div class="page-head-text">
+    <h1 class="page-title">${h(group.name)}</h1>
   </div>
   ${isCreator ? `<button type="button" class="icon-btn danger" id="delete-group-top" aria-label="Delete group" title="Delete group">${icon('trash')}</button>` : ''}
+</div>
+
+<!-- Banner: category colour, icon, members and total -->
+<div class="group-banner cover-${h(group.category || 'general')}">
+  ${categoryIcon(group.category)}
+  <div class="banner-text">
+    <strong>₹${h(totalSpent.toLocaleString('en-IN', { maximumFractionDigits: 0 }))} <span>spent</span></strong>
+    <span style="text-transform:capitalize">${h(group.category)} · ${members.length} ${members.length === 1 ? 'member' : 'members'}</span>
+  </div>
 </div>
 
 <!-- One line: tabs on the left, CSV + PDF on the right -->
@@ -55,13 +61,11 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
     ${expenses.map((exp) => `
     <div class="expense-item">
       <a class="expense-main" href="expense.html?id=${h(exp.id)}">
-        <span class="expense-category-icon">${categoryIcon(exp.category)}</span>
+        <span class="expense-category-icon cat-${h(exp.category || 'general')}">${categoryIcon(exp.category)}</span>
         <div class="expense-info">
           <div class="expense-desc">${h(exp.description)}</div>
           <div class="expense-meta">
-            <span>${h(exp.paid_by_name)} paid</span>
-            <span>·</span>
-            <span>${h(new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span>
+            <span>Paid by ${h(exp.paid_by === currentUserId ? 'you' : exp.paid_by_name)}</span>
             ${exp.notes ? `<span class="note-tag" title="${h(exp.notes)}">${icon('note')}</span>` : ''}
           </div>
           ${exp.discount > 0 ? `<div class="discount-tag">${icon('tag')} ₹${h(parseFloat(exp.discount).toFixed(0))} off</div>` : ''}
@@ -70,6 +74,7 @@ function renderGroup({ group, members, expenses, balances, settlements, currentU
       <div class="expense-right">
         <div class="expense-amount">₹${h((parseFloat(exp.amount) - parseFloat(exp.discount)).toFixed(2))}</div>
         <div class="expense-actions">
+          <span class="expense-date">${h(new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span>
           ${(exp.paid_by === currentUserId || exp.created_by === currentUserId) ? `
           <a href="add-expense.html?group_id=${h(group.id)}&expense_id=${h(exp.id)}" class="mini-btn" aria-label="Edit expense">${icon('edit')}</a>` : ''}
           <button type="button" class="mini-btn danger" data-delete-expense="${h(exp.id)}" aria-label="Delete expense">${icon('trash')}</button>
@@ -302,7 +307,7 @@ async function main() {
   const settlements = settlementsRes.data.map((s) => ({
     ...s,
     from_name: s.from_profile ? s.from_profile.name : 'Unknown',
-    from_color: s.from_profile ? s.from_profile.avatar_color : '#0284c7',
+    from_color: s.from_profile ? s.from_profile.avatar_color : '#6366f1',
     to_name: s.to_profile ? s.to_profile.name : 'Unknown',
   }));
 

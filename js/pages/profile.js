@@ -2,7 +2,7 @@ import { supabase } from '../supabase.js';
 import { h, initial, icon, requireUser, flashFromStorage, showFlash, toggleTheme, currentTheme, confirmBox, cacheProfile, signOut } from '../ui.js';
 
 const APP_VERSION = '1.2';
-const COLORS = ['#0ea5e9', '#0284c7', '#06b6d4', '#14b8a6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+const COLORS = ['#8b5cf6', '#6366f1', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
 const row = (id, ic, tone, title, sub, trailing) => `
   <button type="button" class="menu-row" id="${id}">
@@ -43,11 +43,11 @@ async function main() {
     <span class="avatar-dot avatar-lg" style="background:${h(p.avatar_color)}">${initial(p.name)}</span>
     <button type="button" class="avatar-edit" id="edit-avatar" aria-label="Edit profile">${icon('edit')}</button>
   </div>
-  <h2>${h(p.name)}</h2>
-  <p>${h(p.email)}</p>
-  <div class="profile-actions">
-    <button type="button" class="btn-ghost" id="edit-profile">${icon('edit')} Edit profile</button>
+  <div class="who">
+    <h2>${h(p.name)}</h2>
+    <p>${h(p.email)}</p>
   </div>
+  <button type="button" class="icon-btn" id="edit-profile" aria-label="Edit profile">${icon('edit')}</button>
 </div>
 
 <div class="stats-row">

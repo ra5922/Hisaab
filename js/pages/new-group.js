@@ -1,10 +1,11 @@
 import { supabase } from '../supabase.js';
-import { requireUser, showFlash, setFlash, flashFromStorage } from '../ui.js';
+import { requireUser, showFlash, setFlash, flashFromStorage, categoryChips } from '../ui.js';
 
 async function main() {
   const ctx = await requireUser();
   if (!ctx) return;
   flashFromStorage();
+  document.getElementById('category-chips').innerHTML = categoryChips('general');
 
   document.getElementById('group-form').addEventListener('submit', async (e) => {
     e.preventDefault();

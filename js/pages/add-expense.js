@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { h, initial, icon, CATEGORIES, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
+import { h, initial, icon, categoryChips, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton } from '../ui.js';
 import { round2, splitEqually, splitCustom } from '../logic.js';
 
 function renderForm(group, members, currentUserId, expense) {
@@ -8,7 +8,6 @@ function renderForm(group, members, currentUserId, expense) {
   if (editing) expense.splits.forEach((s) => { sharesById[s.user_id] = s; });
   const isCustom = editing && expense.split_type === 'custom';
   const selectedPayer = editing ? expense.paid_by : currentUserId;
-  const categories = CATEGORIES;
   // Custom shares are typed as parts of the full amount (the discount is applied on top), so undo that here
   const rawShare = (userId) => {
     const s = sharesById[userId];
@@ -25,19 +24,16 @@ function renderForm(group, members, currentUserId, expense) {
   </div>
 </div>
 
-<div class="form-card">
+<div class="form-card plain">
   <form id="expenseForm">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Description <span class="hint">(separate from custom split names)</span></label>
-        <input type="text" name="description" placeholder="Dinner for Niya & Ram..." value="${editing ? h(expense.description) : ''}" required>
-      </div>
-      <div class="form-group">
-        <label>Category</label>
-        <select name="category">
-          ${categories.map(([value, label]) => `<option value="${value}" ${editing && expense.category === value ? 'selected' : ''}>${label}</option>`).join('')}
-        </select>
-      </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" name="description" placeholder="Dinner for Niya & Ram..." value="${editing ? h(expense.description) : ''}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Category</label>
+      ${categoryChips(editing ? expense.category : 'general')}
     </div>
 
     <div class="form-row">
@@ -119,7 +115,10 @@ function renderForm(group, members, currentUserId, expense) {
       <textarea name="notes" rows="2" placeholder="Any additional details...">${editing ? h(expense.notes || '') : ''}</textarea>
     </div>
 
-    <button type="submit" class="btn-primary w-full">${icon('check')} ${editing ? 'Save Changes' : 'Add Expense'}</button>
+    <div class="form-actions">
+      <a href="${editing ? 'expense.html?id=' + h(expense.id) : 'group.html?id=' + h(group.id)}" class="btn-ghost">Cancel</a>
+      <button type="submit" class="btn-primary">${editing ? 'Save changes' : 'Add expense'}</button>
+    </div>
   </form>
 </div>`;
 }

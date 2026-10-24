@@ -1,18 +1,21 @@
 import { supabase } from '../supabase.js';
-import { h, initial, icon, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton, confirmBox } from '../ui.js';
+import { h, initial, icon, categoryIcon, param, requireUser, flashFromStorage, setFlash, showFlash, leave, backButton, confirmBox } from '../ui.js';
 
 function renderExpense(expense, splits, currentUserId) {
   const effectiveAmount = parseFloat(expense.amount) - (parseFloat(expense.discount) || 0);
   const canEdit = expense.paid_by === currentUserId || expense.created_by === currentUserId;
 
   return `
-<div class="page-header">
-  ${backButton('group.html?id=' + expense.group_id)}
-  <div class="page-head-text">
-    <h1 class="page-title">${h(expense.description)}</h1>
-    <span class="category-badge category-${h(expense.category)}">${h(expense.category)}</span>
+<div class="hero">
+  <div class="hero-top">
+    ${backButton('group.html?id=' + expense.group_id)}
+    <div class="hero-title">Expense</div>
+    ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="icon-btn" aria-label="Edit expense">${icon('edit')}</a>` : '<span style="width:40px"></span>'}
   </div>
-  ${canEdit ? `<a href="add-expense.html?group_id=${h(expense.group_id)}&expense_id=${h(expense.id)}" class="btn-primary">${icon('edit')} Edit</a>` : ''}
+  <div class="hero-circle">${categoryIcon(expense.category)}</div>
+  <div class="hero-amount"><small>₹</small>${h(effectiveAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</div>
+  <div class="hero-sub">${h(expense.description)}</div>
+  <div class="hero-sub" style="font-weight:500">Paid by ${h(expense.paid_by_name)} · ${h(new Date(expense.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }))}</div>
 </div>
 
 <div class="detail-grid">
@@ -87,6 +90,8 @@ ${expense.paid_by === currentUserId ? `
 ` : ''}`;
 }
 
+document.querySelector('.main-content').classList.add('hero-page');
+
 async function main() {
   const ctx = await requireUser();
   if (!ctx) return;
@@ -120,10 +125,11 @@ async function main() {
     .map((s) => ({
       ...s,
       name: s.profile ? s.profile.name : 'Unknown',
-      avatar_color: s.profile ? s.profile.avatar_color : '#0284c7',
+      avatar_color: s.profile ? s.profile.avatar_color : '#6366f1',
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  document.querySelector('.main-content').classList.add('hero-page');
   document.title = `${expense.description} | Hisaab`;
   document.getElementById('content').innerHTML = renderExpense(expense, splits, ctx.user.id);
 

@@ -20,7 +20,7 @@ async function main() {
   flashFromStorage();
   const me = ctx.user.id;
   const content = document.getElementById('content');
-  const cacheKey = 'hisaab_activity_' + me;
+  const cacheKey = 'hisaab_activity_v2_' + me;
   let cached = null;
   try { cached = sessionStorage.getItem(cacheKey); } catch (e) { /* ignore */ }
   if (cached) content.innerHTML = cached;            // last feed, on screen instantly

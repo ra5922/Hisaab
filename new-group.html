@@ -6,7 +6,7 @@
   <link rel="icon" href="img/logo.svg" type="image/svg+xml">
   <link rel="alternate icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
-  <meta name="theme-color" content="#0f0f17">
+  <meta name="theme-color" content="#1c1d22">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,10 +14,10 @@
   <link rel="manifest" href="manifest.json">
   <title>New Group | Hisaab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css">
-  <script>try{var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);document.querySelector('meta[name=theme-color]').content=t==='light'?'#f4f4f8':'#0f0f17'}catch(e){}</script>
+  <script>try{var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);document.querySelector('meta[name=theme-color]').content=t==='light'?'#f4f4f7':'#1c1d22'}catch(e){}</script>
   <script src="js/pwa.js" defer></script>
 </head>
 <body>
@@ -33,35 +33,28 @@
       </div>
     </div>
 
-    <div class="form-card">
+    <div class="form-card plain">
       <form id="group-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Group Name</label>
-            <input type="text" name="name" placeholder="Goa Trip 2024, Flat Expenses..." required>
-          </div>
-          <div class="form-group">
-            <label>Category</label>
-            <select name="category">
-              <option value="general">General</option>
-              <option value="food">Food</option>
-              <option value="travel">Travel</option>
-              <option value="entertainment">Entertainment</option>
-              <option value="shopping">Shopping</option>
-              <option value="utilities">Utilities</option>
-              <option value="sports">Sports</option>
-              <option value="medical">Medical</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label>Group name</label>
+          <input type="text" name="name" placeholder="Goa Trip, Flat Expenses..." required>
         </div>
 
         <div class="form-group">
-          <label>Add Members <span class="hint">(you're automatically included)</span></label>
+          <label>Category</label>
+          <div id="category-chips"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Add members <span class="hint">(you're automatically included)</span></label>
           <input type="text" name="members" placeholder="friend1@example.com, friend2@example.com">
           <p class="hint-text">Enter the email each friend used to sign up, separated by commas.</p>
         </div>
 
-        <button type="submit" class="btn-primary">Create Group</button>
+        <div class="form-actions">
+          <a href="groups.html" class="btn-ghost">Cancel</a>
+          <button type="submit" class="btn-primary">Create group</button>
+        </div>
       </form>
     </div>
   </main>
